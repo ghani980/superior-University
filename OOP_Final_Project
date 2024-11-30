@@ -1,0 +1,152 @@
+from abc import ABC, abstractmethod
+
+# Base class for common user functionality
+class User:
+    def __init__(self, username):
+        self.username = username
+
+    def get_username(self):
+        return self.username
+
+# Admin class inherits from User to extend functionality
+class Admin(User):
+    def __init__(self, username):
+        super().__init__(username)
+
+    def add_product(self, inventory, code, name, quantity, price):
+        inventory.add_product(code, name, quantity, price)
+
+    def check_inventory(self, inventory, code):
+        inventory.check_inventory(code)
+
+    def update_product(self, inventory, code, name=None, quantity=None, price=None):
+        inventory.update_product(code, name, quantity, price)
+
+    def delete_product(self, inventory, code):
+        inventory.delete_product(code)
+
+# Abstract class for Inventory operations
+class InventoryOperations(ABC):
+    @abstractmethod
+    def add_product(self, code, name, quantity, price):
+        pass
+
+    @abstractmethod
+    def check_inventory(self, code):
+        pass
+
+    @abstractmethod
+    def update_product(self, code, name, quantity, price):
+        pass
+
+    @abstractmethod
+    def delete_product(self, code):
+        pass
+
+# Product class to hold the product details
+class Product:
+    def __init__(self, code, name, quantity, price):
+        self.code = code
+        self.name = name
+        self.quantity = quantity
+        self.price = price
+
+    def __str__(self):
+        return f"Product Code: {self.code}\nName: {self.name}\nQuantity: {self.quantity}\nPrice: {self.price}"
+
+# Inventory class inherits from InventoryOperations to implement the abstract methods
+class Inventory(InventoryOperations):
+    def __init__(self):
+        self.products = {}
+
+    def add_product(self, code, name, quantity, price):
+        if code in self.products:
+            print(f"Product with code {code} already exists.")
+        else:
+            product = Product(code, name, quantity, price)
+            self.products[code] = product
+            print(f"Product {name} added successfully!")
+
+    def check_inventory(self, code):
+        if code in self.products:
+            product = self.products[code]
+            print(product)
+        else:
+            print(f"Product with code {code} not found in inventory.")
+
+    def update_product(self, code, name=None, quantity=None, price=None):
+        if code in self.products:
+            product = self.products[code]
+            if name:
+                product.name = name
+            if quantity is not None:
+                product.quantity = quantity
+            if price is not None:
+                product.price = price
+            print(f"Product {code} updated successfully!")
+        else:
+            print(f"Product with code {code} not found. Cannot update.")
+
+    def delete_product(self, code):
+        if code in self.products:
+            del self.products[code]
+            print(f"Product with code {code} deleted successfully!")
+        else:
+            print(f"Product with code {code} not found. Cannot delete.")
+
+# Main class that controls the flow of the program
+class InventorySystem:
+    def __init__(self, admin_username):
+        self.inventory = Inventory()
+        self.admin = Admin(admin_username)
+
+    def start(self):
+        while True:
+            print("\nInventory Management System")
+            print("1. Add Product")
+            print("2. Check Inventory by Product Code")
+            print("3. Update Product")
+            print("4. Delete Product")
+            print("5. Exit")
+
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                code = input("Enter product code: ")
+                name = input("Enter product name: ")
+                quantity = int(input("Enter product quantity: "))
+                price = float(input("Enter product price: "))
+                self.admin.add_product(self.inventory, code, name, quantity, price)
+
+            elif choice == "2":
+                code = input("Enter product code to check: ")
+                self.admin.check_inventory(self.inventory, code)
+
+            elif choice == "3":
+                code = input("Enter product code to update: ")
+                name = input("Enter new name (leave empty to keep current): ")
+                quantity = input("Enter new quantity (leave empty to keep current): ")
+                price = input("Enter new price (leave empty to keep current): ")
+                
+                # Convert quantity and price to correct type, if not provided, use None
+                quantity = int(quantity) if quantity else None
+                price = float(price) if price else None
+
+                self.admin.update_product(self.inventory, code, name or None, quantity, price)
+
+            elif choice == "4":
+                code = input("Enter product code to delete: ")
+                self.admin.delete_product(self.inventory, code)
+
+            elif choice == "5":
+                print("Exiting system.")
+                break
+
+            else:
+                print("Invalid choice. Please try again.")
+
+# Start the system
+if __name__ == "__main__":
+    username = input("Enter admin username: ")
+    system = InventorySystem(username)
+    system.start()
